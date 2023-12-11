@@ -63,8 +63,13 @@ func TestServerWithServerMux(t *testing.T) {
 	}
 }
 
-func TestServerRequest() {
+func TestServerRequest(t *testing.T) {
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		fmt.Fprintln(writer, request.Method)
+		fmt.Fprintln(writer, request.RequestURI)
+	})
 
 	server := http.Server{
 		Addr:    "localhost:8080",
