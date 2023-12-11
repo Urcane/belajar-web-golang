@@ -1,10 +1,13 @@
 package belajar_golang_web
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -42,6 +45,95 @@ func TestHttpTestWithParam(t *testing.T) {
 	recorder := httptest.NewRecorder()
 
 	SayHelloWithParam(recorder, request) // response parsed into recorder
+
+	response := recorder.Result()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(body))
+}
+
+func MultipleParamWithSameValue(writer http.ResponseWriter, request *http.Request) {
+	query := request.URL.Query()
+	names := query["name"]
+
+	fmt.Fprint(writer, names)
+}
+
+func TestHttpTestWithMultipleParam(t *testing.T) {
+	request := httptest.NewRequest(http.MethodGet, "http://localhost:8080/test-multiple?name=mulyadi&name=okeoke", nil)
+	recorder := httptest.NewRecorder()
+
+	MultipleParamWithSameValue(recorder, request)
+	response := recorder.Result()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(body))
+}
+
+func PostMethodNormal(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		panic(err)
+	}
+
+	firstName := r.PostForm.Get("firstName")
+	lastName := r.PostForm.Get("lastName")
+
+	fmt.Fprintf(w, "Hello, %s %s", firstName, lastName)
+}
+
+func TestPostMethodNormal(t *testing.T) {
+	requestBody := strings.NewReader("firstName=Mulyadi&lastName=Okejuga")
+	request := httptest.NewRequest(http.MethodPost, "http://localhost:8080/", requestBody)
+	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	recorder := httptest.NewRecorder()
+
+	PostMethodNormal(recorder, request)
+
+	response := recorder.Result()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(body))
+}
+
+// Sending with JSON Data
+type Fullname struct {
+	FirstName string
+	LastName  string
+}
+
+func PostMethod(writer http.ResponseWriter, request *http.Request) {
+	var data *Fullname
+
+	err := json.NewDecoder(request.Body).Decode(&data)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Fprintf(writer, "Halo-Halo semuanya, Halo %s %s", data.FirstName, data.LastName)
+
+	// firstName := request.PostForm.Get("first_name")
+	// lastName := request.PostForm.Get("last_name")
+
+	// fmt.Fprintf(writer, "Hello %s %s !", firstName, lastName)
+}
+
+func TestPostMethod(t *testing.T) {
+	requestBody := bytes.NewBuffer([]byte(`{"firstName": "Mulyadi", "lastName": "Okeoke"}`))
+	request := httptest.NewRequest(http.MethodPost, "http://localhost:8080/", requestBody)
+	request.Header.Add("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+
+	PostMethod(recorder, request)
 
 	response := recorder.Result()
 	body, err := io.ReadAll(response.Body)
