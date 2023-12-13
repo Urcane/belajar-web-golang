@@ -81,3 +81,44 @@ func TestServerRequest(t *testing.T) {
 		panic(err)
 	}
 }
+
+func SetCookies(writer http.ResponseWriter, request *http.Request)  {
+	if request.URL.Query().Get("fullname") == "" {
+		fmt.Fprint(writer, "No Fullname has been set")
+		return
+	}
+	
+	cookies := new(http.Cookie)
+	
+	cookies.Name = "X-URCN-Name"
+	cookies.Value = request.URL.Query().Get("fullname")
+	cookies.Path = "/"
+
+	http.SetCookie(writer, cookies)
+	fmt.Fprint(writer, "Succeed to procceed cookies")
+}
+
+func GetCookies(writer http.ResponseWriter, request *http.Request)  {
+	cookies, err := request.Cookie("X-URCN-Name")
+	if err != nil {
+		fmt.Fprint(writer, "No Cookies")
+		return
+	}
+	name := cookies.Value
+	fmt.Fprintf(writer, "Hello, %s", name)
+}
+
+func TestCookies(t *testing.T) {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/set-cookies", SetCookies)
+	mux.HandleFunc("/get-cookies", GetCookies)
+
+	server := http.Server{
+		Addr: "localhost:8080",
+		Handler: mux,
+	}
+
+	err := server.ListenAndServe()
+	panic(err)
+}

@@ -143,3 +143,54 @@ func TestPostMethod(t *testing.T) {
 
 	fmt.Println(string(body))
 }
+
+func TestSetCookies(t *testing.T) {
+	request := httptest.NewRequest(http.MethodGet, "http://localhost:8080/set-cookies?fullname=mulyadi", nil)
+	recorder := httptest.NewRecorder()
+
+	SetCookies(recorder, request)
+
+	response := recorder.Result()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	cookies := response.Cookies()
+
+	fmt.Println(string(body))
+
+	for _, cookie := range cookies {
+		fmt.Printf("Cookies dengan nama: %s, memiliki value %s\n", cookie.Name, cookie.Value)
+	}
+
+}
+
+func TestGetCookies(t *testing.T) {
+	request := httptest.NewRequest(http.MethodGet, "http://localhost:8080/", nil)
+
+	cookie := new(http.Cookie)
+	cookie.Name = "X-URCN-Name"
+	cookie.Value = "Mulyade"	
+	request.AddCookie(cookie)
+
+	recorder := httptest.NewRecorder()
+
+	GetCookies(recorder, request)
+
+	response := recorder.Result()
+	cookies := request.Cookies()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(body))
+
+	for _, c := range cookies {
+		fmt.Printf("Cookies dengan nama: %s, memiliki value %s\n", c.Name, c.Value)
+	}
+	
+}
