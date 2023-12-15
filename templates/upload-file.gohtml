@@ -1,0 +1,32 @@
+{{define "upload_file"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test File Server</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <form action="/upload-form" method="post" enctype="multipart/form-data">
+        <div>
+            <label for="name">Name: </label>
+            <input type="text" name="name" id="name">
+        </div>
+        <div>
+            <label for="uploaded-file">Upload File: </label>
+            <input type="file" name="uploaded-file" id="uploaded-file">
+        </div>
+        <button type="submit">Submit Here</button>
+    </form>
+
+    <div>
+        {{.Name}}
+    </div>
+    <div>
+        <img src="{{.FileSrc}}" alt="Gambar">
+    </div>
+    <script src="./main.js"></script>
+</body>
+</html>
+{{end}}
